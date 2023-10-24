@@ -61,6 +61,7 @@ def get_plan(request):
     driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
     lessons = driver.find_elements(By.CLASS_NAME, "lesson")
     current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
+    driver.quit()
     if current_date in sem_zim:
         sem = sem_zim
     else:
@@ -83,5 +84,5 @@ def get_plan(request):
         resoult[date][block] = [display, full_info]
 
 
-    driver.quit()
+    
     return JsonResponse(resoult)
