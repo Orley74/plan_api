@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-mx9sihquf$l&1jm)d8x(e=6iitqv(4$u@22pgdoef^s4r(^fxg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['planapi.azurewebsites.net']
+ALLOWED_HOSTS = ['planwat.azurewebsites.net']
 
 
 # Application definition
