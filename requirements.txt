@@ -2,4 +2,3 @@ Django==4.1.4
 selenium
 requests
 bs4
-python 3.10
