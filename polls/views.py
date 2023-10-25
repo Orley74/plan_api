@@ -9,7 +9,15 @@ sem_let = ["02","03","04","05","06","07","08"]
 
 class group_name(View):
     
-    def get(self,request):
+    def get(self,request, **kwargs):
+
+        try:
+            key = kwargs.get('key')
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
         url = 'https://old.wcy.wat.edu.pl/pl/rozklad'
         response = requests.get(url, verify=False)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -21,7 +29,15 @@ class group_name(View):
     
 class prowadzacy(View):
     
-    def get(self,request):
+    def get(self,request, **kwargs):
+        
+        try:
+            key = kwargs.get('key')
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
         driver = webdriver.Chrome(options)
@@ -42,7 +58,15 @@ class prowadzacy(View):
 
 
 class actuality_stud(View):
-    def get(self,request,**kwargs):
+    def get(self, request, **kwargs):
+        
+        try:
+            key = kwargs.get('key')
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
         try:
             user_group = kwargs.get('group')
         except KeyError:
@@ -60,7 +84,14 @@ class actuality_stud(View):
             return HttpResponse("Wpisz nazwe grupy")
 
 class days(View):
-    def get(self,request):
+    def get(self, request, **kwargs):
+        
+        try:
+            key = kwargs.get('key')
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
         url = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'
         response = requests.get(url, verify=False)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -77,7 +108,14 @@ class days(View):
         return JsonResponse(week)
 
 class plan_stud(View):
-    def get(self,request,**kwargs):
+    def get(self,request,**kwargs):  
+        try:
+            key = kwargs.get('key')
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
         try:
             user_group = kwargs.get('group')
         except KeyError:
@@ -119,6 +157,14 @@ class plan_stud(View):
     
 class plan_prow(View):
     def get(self,request,**kwargs):
+        
+        try:
+            key = kwargs.get('key')
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
         try:
             prow = kwargs.get('prow')
         except KeyError:
@@ -161,6 +207,10 @@ class plan_prow(View):
 class help(View):
     def get(self,request):
         help = """zawsze i wszedzie bzyku jebany bedzie
+        <p> DO KAZDEGO ZAPYTANIA GET, POST ITP POTRZEBNY JEST KLUCZ DOSTEPU
+        <br> taki klucz to bedzie karzel
+        <br> przyklad: response = request.get(url, key="karzel")
+        </p>
                 <p>
                 
                 </p>
@@ -180,7 +230,7 @@ class help(View):
                             <p> {"1": [["25", "IX"], ["02", "X"],...], "2": [...]} zwraca slownik gdzie id to 1,2,3... dni tygodnia od poniedzialku a wartosci to [dzien,miesiac]
                             </p></p><br>
 
-                        <p><dfn>/plan/stud                              </dfn>  -- zwraca plan grupy zajec, przy GET wymaga podania grupy w formie group=nazwa_grupy
+                        <p><dfn>/plan/stud                              </dfn>  -- zwraca plan grupy zajec, przy GET wymaga podania grupy w formie group=nazwa_grupy i KLUCZA key=karzel
                             <p> zwraca slownik gdzie kluczem jest data, ktory zawiera slownik gdzie kluczem jest blok, ktory zawiera przedmiot. Dane o przedmiocie to lista gdzie 0 index to display a 1 to pelne info </p>
                             <p> {"dd-mm-rrrr": {"1": [display,full_info ], "2":...}, ...} max jest do 7 bloku </p/ </p><br>
                         
@@ -194,10 +244,7 @@ class help(View):
                         <br>zrobie tak zeby zawsze JSON byly takie same to bez pierdolenia ze sie zmieni
                         <br>jak skonczycie front to podeslijcie i wstawie gotutaj
                         <br>dziurmas znaczy ten formas czytaj juz o testach jednostkowych, dam ci dostep do serwera jak nauczysz sie cos robic
-                        <br>zebys przypadkiem czegos nie rozjebala
-                         
-
-                
+                        <br>zebys przypadkiem czegos nie rozjebala                        
                 
                 """
         return HttpResponse(help)
