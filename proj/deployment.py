@@ -8,6 +8,7 @@ ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']]
 CSRF_TRUSTED_ORIGINS = ['https://' + os.environ['WEBSITE_HOSTNAME']]
 DEBUG = False
 DISABLE_HUGO_BUILD = True
+WEBSITE_WEBDEPLOY_USE_SCM = True
 # WhiteNoise configuration
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
