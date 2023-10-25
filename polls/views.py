@@ -1,8 +1,8 @@
-import requests
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from django.http import HttpResponse,JsonResponse
+# import requests
+# from bs4 import BeautifulSoup
+# from selenium import webdriver
+# from selenium.webdriver.common.by import By
+# from django.http import HttpResponse,JsonResponse
 
 sem_zim = ["01","09","10","11","12"]
 sem_let = ["02","03","04","05","06","07","08"]
