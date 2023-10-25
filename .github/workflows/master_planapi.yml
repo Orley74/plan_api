@@ -64,4 +64,4 @@ jobs:
         with:
           app-name: 'planapi'
           slot-name: 'Production'
-          publish-profile: ${{'FSmf7EHqWlA0aT2Y1gJFAeiGzeGJvc2C3m9xhcptke9NDRXzXrDlLWC0ePCk'}}
+          publish-profile: ${{secrets.AZUREAPPSERVICE_PUBLISHPROFILE_04B4B20FF78E47DEA29D6A9CCAB1896D}}
