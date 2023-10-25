@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/3792c442-3ee5-4097-b56b-776c45068f2f/resourceGroups/planresource/providers/Microsoft.Web/sites/planapi",
+    "appService.deploySubpath": ".github"
+}
