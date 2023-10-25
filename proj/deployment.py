@@ -4,7 +4,7 @@ from .settings import BASE_DIR
 
 
 SECRET_KEY = os.environ['SECRET']
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['planapi.azurewebsites.net']
 CSRF_TRUSTED_ORIGINS = ['*']
 
 DEBUG = False
