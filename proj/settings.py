@@ -30,6 +30,7 @@ ALLOWED_HOSTS = ["https://planapi.azurewebsites.net/"]
 
 # Application definition
 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
