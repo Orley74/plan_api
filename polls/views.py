@@ -5,9 +5,7 @@ from selenium.webdriver.common.by import By
 from django.http import HttpResponse,JsonResponse
 from django.views import View
 from sqlalchemy import text,create_engine
-DATABASE_CONN = """Server=tcp:planwatdb.database.windows.net,1433;
-Initial Catalog=plan;Persist Security Info=False;User ID=dbadmin;Password=Karzel153cm;MultipleActiveResultSets=False;Encrypt=True;
-TrustServerCertificate=False;Connection Timeout=30;"""
+import os
 
 
 
@@ -213,7 +211,7 @@ class plan_prow(View):
     
 class help(View):
     def get(self,request):
-        engine = create_engine(DATABASE_CONN, echo=True)
+        engine = create_engine(os.environ(['DATABASE_CONNECTION_STRING']), echo=True)
         with engine.connect() as conn:
             resoult = conn.execute(text("sda"))
             print(resoult.all())
