@@ -243,7 +243,7 @@ class help(View):
                         <br>jeszcze nie ma zapisywania do BD wiec wszystko robcie na requestach
                         <br>zrobie tak zeby zawsze JSON byly takie same to bez pierdolenia ze sie zmieni
                         <br>jak skonczycie front to podeslijcie i wstawie gotutaj
-                        <br>dziurmas znaczy ten formas czytaj juz o testach jednostkowych, dam ci dostep do serwera jak nauczysz sie cos robic
+                        <br>formas czytaj juz o testach jednostkowych, dam ci dostep do serwera jak nauczysz sie cos robic
                         <br>zebys przypadkiem czegos nie rozjebala                        
                 
                 """

@@ -6,7 +6,7 @@ from .settings import BASE_DIR
 SECRET_KEY = os.environ['SECRET']
 ALLOWED_HOSTS = ['planwat.azurewebsites.net']
 CSRF_TRUSTED_ORIGINS = ['https://' + os.environ['WEBSITE_HOSTNAME']]
-
+DATABASE_CONNECTION_STRING = secrets.DATABASE_CONNECTION_STRING
 DEBUG = False
 
 
