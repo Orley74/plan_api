@@ -58,7 +58,7 @@ class group_name(View):
                 with conn.cursor() as cursor:
                     
                     cursor.execute(f"""
-                                        insert into group (ID_Grupy) values ('{option.text.strip()}')
+                                        insert into grupa (ID_Grupy) values ('{option.text.strip()}')
 
     """
                                 )
