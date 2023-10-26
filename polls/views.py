@@ -4,14 +4,16 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.http import HttpResponse,JsonResponse
 from django.views import View
-from sqlalchemy import text,create_engine
-import os
+import pyodbc
 
-DATABASE_CONN = """
-                Server=tcp:planwatdb.database.windows.net,1433;
-                Initial Catalog=plan;Persist Security Info=False;User ID=dbadmin;Password=Karzel153cm;MultipleActiveResultSets=False;Encrypt=True;
-                TrustServerCertificate=False;Connection Timeout=30;
-"""
+
+
+def connect():
+
+    connection_string = (
+                    "Driver={ODBC Driver 18 for SQL Server};Server=tcp:planwatdb.database.windows.net,1433;Database=plan;Uid=dbadmin;Pwd={your_password_here};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;")
+
+    conn = pyodbc.connect(connection_string)
 
 sem_zim = ["01","09","10","11","12"]
 sem_let = ["02","03","04","05","06","07","08"]
@@ -215,10 +217,17 @@ class plan_prow(View):
     
 class help(View):
     def get(self,request):
-        engine = create_engine(DATABASE_CONN, echo=True)
-        with engine.connect() as conn:
-            resoult = conn.execute(text("sda"))
-            print(resoult.all())
+        conn = connect()
+        
+        try:
+            with conn.cursor as cursor:
+                
+                sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
+                cursor.execute(sql, ('john@example.com', 'mypassword'))
+                conn.commit()
+                print("Record inserted successfully")
+        finally:
+            conn.close
         help = """zawsze i wszedzie bzyku jebany bedzie
         <p> DO KAZDEGO ZAPYTANIA GET, POST ITP POTRZEBNY JEST KLUCZ DOSTEPU
         <br> taki klucz to bedzie karzel
