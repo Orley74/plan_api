@@ -6,6 +6,7 @@ from django.http import HttpResponse,JsonResponse
 from django.views import View
 from sqlalchemy import text,create_engine
 import os
+from proj.deployment import DATABASE_CONNECTION_STRING
 
 
 
@@ -211,7 +212,7 @@ class plan_prow(View):
     
 class help(View):
     def get(self,request):
-        engine = create_engine(os.environ(['DATABASE_CONNECTION_STRING']), echo=True)
+        engine = create_engine(DATABASE_CONNECTION_STRING, echo=True)
         with engine.connect() as conn:
             resoult = conn.execute(text("sda"))
             print(resoult.all())
