@@ -7,7 +7,11 @@ from django.views import View
 from sqlalchemy import text,create_engine
 import os
 
-
+DATABASE_CONN = """
+                Server=tcp:planwatdb.database.windows.net,1433;
+                Initial Catalog=plan;Persist Security Info=False;User ID=dbadmin;Password=Karzel153cm;MultipleActiveResultSets=False;Encrypt=True;
+                TrustServerCertificate=False;Connection Timeout=30;
+"""
 
 sem_zim = ["01","09","10","11","12"]
 sem_let = ["02","03","04","05","06","07","08"]
@@ -211,7 +215,7 @@ class plan_prow(View):
     
 class help(View):
     def get(self,request):
-        engine = create_engine(os.environ(['DATABASE_CONNECTION_STRING']), echo=True)
+        engine = create_engine(DATABASE_CONN, echo=True)
         with engine.connect() as conn:
             resoult = conn.execute(text("sda"))
             print(resoult.all())
