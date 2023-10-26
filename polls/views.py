@@ -4,6 +4,11 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.http import HttpResponse,JsonResponse
 from django.views import View
+from sqlalchemy import text,create_engine
+import os
+
+
+
 sem_zim = ["01","09","10","11","12"]
 sem_let = ["02","03","04","05","06","07","08"]
 
@@ -206,6 +211,10 @@ class plan_prow(View):
     
 class help(View):
     def get(self,request):
+        engine = create_engine(os.environ(['DATABASE_CONNECTION_STRING']), echo=True)
+        with engine.connect() as conn:
+            resoult = conn.execute(text("sda"))
+            print(resoult.all())
         help = """zawsze i wszedzie bzyku jebany bedzie
         <p> DO KAZDEGO ZAPYTANIA GET, POST ITP POTRZEBNY JEST KLUCZ DOSTEPU
         <br> taki klucz to bedzie karzel
