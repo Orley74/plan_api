@@ -4,6 +4,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.http import HttpResponse,JsonResponse
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+
 import pyodbc
 
 
@@ -11,9 +13,9 @@ import pyodbc
 def connect():
 
     connection_string = (
-                    "Driver={ODBC Driver 18 for SQL Server};Server=tcp:planwatdb.database.windows.net,1433;Database=plan;Uid=dbadmin;Pwd={your_password_here};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;")
+                    "Driver={ODBC Driver 17 for SQL Server};Server=tcp:planwatdb.database.windows.net,1433;Database=plan;Uid=dbadmin;Pwd=Karzel153cm;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;")
 
-    conn = pyodbc.connect(connection_string)
+    return pyodbc.connect(connection_string)
 
 sem_zim = ["01","09","10","11","12"]
 sem_let = ["02","03","04","05","06","07","08"]
@@ -37,6 +39,35 @@ class group_name(View):
         for option in options:
             group_names.append(option.text.strip())
         return JsonResponse(group_names, safe=False)
+    
+    def post(self,request,**kwargs):
+        try:
+            key = kwargs.get('key')
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
+        url = 'https://old.wcy.wat.edu.pl/pl/rozklad'
+        response = requests.get(url, verify=False)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        options = soup.find('select', {"class": "ctools-jump-menu-select form-select"}).find_all('option')
+        conn = connect()
+        for option in options:
+            try:
+                with conn.cursor() as cursor:
+                    
+                    cursor.execute(f"""
+                                        insert into group (ID_Grupy) values ('{option.text.strip()}')
+
+    """
+                                )
+            except:
+                return HttpResponse(["Blad zapisu do bazy danych"])                      
+            finally:
+                conn.commit()
+                conn.close()
+        
     
 class prowadzacy(View):
     
@@ -220,14 +251,19 @@ class help(View):
         conn = connect()
         
         try:
-            with conn.cursor as cursor:
+            with conn.cursor() as cursor:
                 
-                sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
-                cursor.execute(sql, ('john@example.com', 'mypassword'))
+                cursor.execute("""
+                                    insert into MyTestPersonTable (Name) values ('asd')
+
+"""
+                               )
                 conn.commit()
-                print("Record inserted successfully")
+
+                
         finally:
-            conn.close
+            conn.close()
+        
         help = """zawsze i wszedzie bzyku jebany bedzie
         <p> DO KAZDEGO ZAPYTANIA GET, POST ITP POTRZEBNY JEST KLUCZ DOSTEPU
         <br> taki klucz to bedzie karzel
