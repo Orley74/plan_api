@@ -5,76 +5,155 @@ from selenium.webdriver.common.by import By
 from django.http import HttpResponse,JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+import neo4j
+from neo4j import GraphDatabase, RoutingControl, exceptions
 
-import pyodbc
 
+uri = 'neo4j+s://b35e138c.databases.neo4j.io'
+auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
 
-
-def connect():
-
-    connection_string = (
-                    "Driver={ODBC Driver 17 for SQL Server};Server=tcp:planwatdb.database.windows.net,1433;Database=plan;Uid=dbadmin;Pwd=Karzel153cm;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;")
-
-    return pyodbc.connect(connection_string)
 
 sem_zim = ["01","09","10","11","12"]
 sem_let = ["02","03","04","05","06","07","08"]
 
+
+def add_group(driver, ID):
+    try:
+        driver.execute_query(
+        "Create (g:Group {ID: $name}) ",
+        name=ID,database_="neo4j",
+    )
+    except neo4j.exceptions.ConstraintError:
+        print(f"grupa {ID} jest juz w bazie danych")
+
+
+
+def print_group(driver):
+    records, _, _= driver.execute_query(
+        "MATCH (g:Group)"
+        "RETURN g.ID",
+         database_="neo4j", routing_=RoutingControl.READ,
+    )
+    resoult = []
+    for record in records:
+        resoult.append(record['g.ID'])
+    
+    print(resoult)
+    return resoult
+
+
+
+def add_prac(driver, ID, name):
+ 
+    try:
+        driver.execute_query(
+        "Create (p:Pracownik {ID: $ID, name: $name}) ",
+        ID=ID,name=name,database_="neo4j",
+    )
+    except neo4j.exceptions.ConstraintError:
+        print(f"Pracownik {name} jest juz w bazie danych")
+
+def print_prac(driver):
+    records, _, _ = driver.execute_query(
+        "MATCH (p:Pracownik)"
+        "RETURN p",
+         database_="neo4j", routing_=RoutingControl.READ,
+    )
+    resoult = {}
+    print(records[0].data())
+    for record in records:
+        data = record.data()
+        resoult[data['p']['ID']] = data['p']['name']
+    return resoult
+
+def add_date(driver,date,group):
+    try:
+        driver.execute_query(
+        "Create (d:Day {Data: $date}) ",
+        date=date,database_="neo4j",
+    )
+    except neo4j.exceptions.ConstraintError:
+        print(f"Data {date} jest juz w bazie danych")
+
+    try:
+        driver.execute_query(
+        """match (d:Day), (g:Group)
+        Where d.Data = {date}
+        and g.ID = {group}
+        create (g)-[:ma_zajecia_dnia]->(d) """,
+        date=date,group=group,database_="neo4j",
+    )
+    except neo4j.exceptions.ConstraintError:
+        print(f"Relacja jest juz w bazie danych")
+    
+        
+
+
 class group_name(View):
     
     def get(self,request, **kwargs):
-
+        
         try:
-            key = kwargs.get('key')
+            key = request.META['HTTP_KEY']
         except KeyError:
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
             return HttpResponse("bledny klucz")
         
-        url = 'https://old.wcy.wat.edu.pl/pl/rozklad'
-        response = requests.get(url, verify=False)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        options = soup.find('select', {"class": "ctools-jump-menu-select form-select"}).find_all('option')
-        group_names = []
-        for option in options:
-            group_names.append(option.text.strip())
-        return JsonResponse(group_names, safe=False)
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_group(driver)
+            driver.close()
+            
+        return JsonResponse(records, safe=False)
     
     def post(self,request,**kwargs):
+        
         try:
-            key = kwargs.get('key')
+            key = request.META['HTTP_KEY']
         except KeyError:
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
             return HttpResponse("bledny klucz")
-        
+    
         url = 'https://old.wcy.wat.edu.pl/pl/rozklad'
         response = requests.get(url, verify=False)
         soup = BeautifulSoup(response.text, 'html.parser')
         options = soup.find('select', {"class": "ctools-jump-menu-select form-select"}).find_all('option')
-        conn = connect()
-        for option in options:
-            try:
-                with conn.cursor() as cursor:
-                    
-                    cursor.execute(f"""
-                                        insert into grupa (ID_Grupy) values ('{option.text.strip()}')
-
-    """
-                                )
-            except:
-                return HttpResponse(["Blad zapisu do bazy danych"])                      
-            finally:
-                conn.commit()
-                conn.close()
-        
+        with GraphDatabase.driver(uri, auth=auth) as driver:
+            for option in options:
+                try:
+                    add_group(driver, option.text.strip())
+                except Exception as e:
+                    print(e)
+                finally:
+                    driver.close()
+        print("pomyslnie zaaktualizowano nazwy grup")
+        return HttpResponse(["pomyslnie zaaktualizowano nazwy grup"])
     
 class prowadzacy(View):
     
     def get(self,request, **kwargs):
         
         try:
-            key = kwargs.get('key')
+            key = str(request.read(),encoding='ascii')
+            key = key.split("=")[1]
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
+        
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_prac(driver)
+            
+        return JsonResponse(records, safe=False)
+
+
+    def post(self,request,**kwargs):
+
+        try:
+            key = str(request.read(),encoding='ascii')
+            key = key.split("=")[1]
         except KeyError:
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
@@ -83,34 +162,40 @@ class prowadzacy(View):
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
         driver = webdriver.Chrome(options)
-        resoult = {}
 
         driver.get(f"https://old.wcy.wat.edu.pl/pl/planzajec")
         options = driver.find_element(By.TAG_NAME, "select").find_elements(By.TAG_NAME, "option")
-        prow = {}
-        for option in options:
-            name = option.get_property("label")
-            try:
-                id = option.get_property("value").split("id=")[1]
-            except IndexError:
-                id = 'brak'
-            prow[id]=name
-        driver.quit()
-        return JsonResponse(prow, safe=False)
 
+        with GraphDatabase.driver(uri, auth=auth) as driver:
+            for option in options:
+                try:
+                    name = option.get_property("label")
+                    try:
+                        id = option.get_property("value").split("id=")[1]
+                    except IndexError:
+                        id = 'brak'
+                    add_prac(driver,id,name)
+                
+                except Exception as e:
+                    print(e)
+                finally:
+                    driver.close()
+
+        print("pomyslnie zaaktualizowano prowadzacych")
+        return HttpResponse(["pomyslnie zaaktualizowano prowadzacych"])
 
 class actuality_stud(View):
     def get(self, request, **kwargs):
         
         try:
-            key = kwargs.get('key')
+            key = request.META['HTTP_KEY']
         except KeyError:
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
             return HttpResponse("bledny klucz")
         
         try:
-            user_group = kwargs.get('group')
+            user_group = request.META['HTTP_GRP']
         except KeyError:
             return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
         
@@ -151,18 +236,24 @@ class days(View):
 
 class plan_stud(View):
     def get(self,request,**kwargs):  
+        
         try:
-            key = kwargs.get('key')
+            key = request.META['HTTP_KEY']
         except KeyError:
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
             return HttpResponse("bledny klucz")
         
         try:
-            user_group = kwargs.get('group')
+            user_group = request.META['HTTP_GRP']
         except KeyError:
             return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
 
+        
+        confirm = request.META['HTTP_CONFIRM']
+        if confirm != "tak":
+            return HttpResponse["uzyj get"]
+        
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
         driver = webdriver.Chrome(options)
@@ -180,6 +271,8 @@ class plan_stud(View):
 
         for index in lessons:
             date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
+            
+
             month = date.split("_")[1]
 
             if month in sem:
@@ -197,18 +290,82 @@ class plan_stud(View):
 
         return JsonResponse(resoult)
     
-class plan_prow(View):
-    def get(self,request,**kwargs):
+
+    def post(self,request,**kwargs):  
         
         try:
-            key = kwargs.get('key')
+            key = request.META['HTTP_KEY']
         except KeyError:
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
             return HttpResponse("bledny klucz")
         
         try:
-            prow = kwargs.get('prow')
+            user_group = request.META['HTTP_GRP']
+        except KeyError:
+            return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
+
+        
+        confirm = request.META['HTTP_CONFIRM']
+        if confirm != "tak":
+            return HttpResponse["uzyj get"]
+        
+        options = webdriver.ChromeOptions()
+        options.add_argument('headless')
+        driver = webdriver.Chrome(options)
+        driver.implicitly_wait(1)
+        resoult = {}
+
+        driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
+        lessons = driver.find_elements(By.CLASS_NAME, "lesson")
+        current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
+        
+        if current_date in sem_zim:
+            sem = sem_zim
+        else:
+            sem = sem_let
+
+        for index in lessons:
+            date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
+            
+            
+            with GraphDatabase.driver(uri,auth=auth) as bd:
+                add_date(bd,date,user_group)
+
+            month = date.split("_")[1]
+
+            if month in sem:
+                full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
+                display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
+                block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
+                id_prow = display[3].split("[")[0]
+                place = display[2]
+                form = display[1]
+                short = display[0]
+            else:
+                continue
+
+            if date not in resoult:
+                resoult[date] = {}
+
+            resoult[date][block] = [display, full_info]
+
+        driver.quit()
+
+        return JsonResponse(resoult)
+    
+class plan_prow(View):
+    def get(self,request,**kwargs):
+        
+        try:
+            key = request.META['HTTP_KEY']
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
+        try:
+            prow = request.META['HTTP_PROW']
         except KeyError:
             return JsonResponse({"Podaj prowadzacego cepie, prow = nazwa_grupy zazwyczaj 2 pierwsze litery PS BZYKU CHUJ"})
 
@@ -248,21 +405,18 @@ class plan_prow(View):
     
 class help(View):
     def get(self,request):
-        conn = connect()
-        
-        try:
-            with conn.cursor() as cursor:
-                
-                cursor.execute("""
-                                    insert into MyTestPersonTable (Name) values ('asd')
-
-"""
-                               )
-                conn.commit()
-
-                
-        finally:
-            conn.close()
+       
+    #     try:
+    #         with GraphDatabase.driver(uri, auth) as driver:
+    #             driver.execute_query(
+    #     "MERGE (a:Person {name: $name}) "
+    #     "MERGE (friend:Person {name: $friend_name}) "
+    #     "MERGE (a)-[:KNOWS]->(friend)",
+    #     name="name", friend_name="friend_name", database_="Plan",
+    # )
+                 
+    #     finally:
+    #         driver.close()
         
         help = """zawsze i wszedzie bzyku jebany bedzie
         <p> DO KAZDEGO ZAPYTANIA GET, POST ITP POTRZEBNY JEST KLUCZ DOSTEPU
