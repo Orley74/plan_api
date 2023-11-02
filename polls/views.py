@@ -43,6 +43,7 @@ def print_group(driver):
 
 
 
+
 def add_prac(driver, ID, name):
  
     try:
