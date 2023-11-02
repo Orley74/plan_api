@@ -66,28 +66,75 @@ def print_prac(driver):
         resoult[data['p']['ID']] = data['p']['name']
     return resoult
 
-def add_date(driver,date,group):
-    try:
-        driver.execute_query(
-        "Create (d:Day {Data: $date}) ",
-        date=date,database_="neo4j",
-    )
-    except neo4j.exceptions.ConstraintError:
-        print(f"Data {date} jest juz w bazie danych")
-
-    try:
-        driver.execute_query(
-        """match (d:Day), (g:Group)
-        Where d.Data = {date}
-        and g.ID = {group}
-        create (g)-[:ma_zajecia_dnia]->(d) """,
-        date=date,group=group,database_="neo4j",
-    )
-    except neo4j.exceptions.ConstraintError:
-        print(f"Relacja jest juz w bazie danych")
+def add_date(driver,all,group):
     
-        
+    for date in all.keys():
 
+        for blok in all[date].keys():
+            display = all[date][blok][0]
+            full = all[date][blok][1]
+            id_prow = display[3].split("[")[0]
+            place = display[2]
+            form = display[1]
+            short = display[0]
+            # print(id_prow, place, form, short, full)
+            
+            try:
+                driver.execute_query(
+                """Merge (b:Blok {id_prow: $id_prow, place: $place, date: $date, nr: $blok}) 
+            
+                On Create
+                    SET 
+                    b.id_prow = $id_prow,
+                    b.place = $place,
+                    b.date = $date,
+                    b.nr = $blok,
+                    b.grups = [$group],
+                    b.form = $form,
+                    b.short = $short,
+                    b.full = $full
+
+                On match
+                    SET b.grups = CASE 
+                        WHEN NOT $group IN b.grups THEN b.grups + $group
+                        ELSE b.grups
+               END
+                """,
+                date=date,group=group,blok=blok,id_prow=id_prow,place=place,form=form,short=short,full=full,database_="neo4j",
+                )    
+        
+            except neo4j.exceptions.ConstraintError:
+                print(f"Zajecia dnia: {date} sa juz dodane do bloku {blok}")
+
+            try:
+                driver.execute_query(
+                """match (b:Blok), (p:Pracownik)
+                Where p.ID = b.id_prow
+                and b.nr = $blok
+                and b.date = $date
+                MERGE (p)-[pz:prowadz_zajecia]->(b)
+                """,
+                date=date,group=group,blok=blok,database_="neo4j",
+            )
+                
+                driver.execute_query(
+                """match (g:Group), (b:Blok)
+                Where  g.ID in b.grups
+                and b.date = $date
+                and b.nr = $blok
+                MERGE (g)-[bz:blok_zajec]->(b)""",
+                date=date,group=group,blok=blok,database_="neo4j",
+            )
+            except neo4j.exceptions.ConstraintError:
+                print(f"Powiazania sa juz wykonane")
+            except e as Exception:
+                print(e)
+
+            print(f"Zakonczono dodawanie dnia: {date} do bloku {blok}")
+
+
+
+    return ("Zakonczono dodawanie")
 
 class group_name(View):
     
@@ -99,11 +146,10 @@ class group_name(View):
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
             return HttpResponse("bledny klucz")
-        
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_group(driver)
             driver.close()
-            
+
         return JsonResponse(records, safe=False)
     
     def post(self,request,**kwargs):
@@ -329,8 +375,7 @@ class plan_stud(View):
             date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
             
             
-            with GraphDatabase.driver(uri,auth=auth) as bd:
-                add_date(bd,date,user_group)
+            
 
             month = date.split("_")[1]
 
@@ -338,10 +383,7 @@ class plan_stud(View):
                 full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
                 display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
                 block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
-                id_prow = display[3].split("[")[0]
-                place = display[2]
-                form = display[1]
-                short = display[0]
+                
             else:
                 continue
 
@@ -349,10 +391,13 @@ class plan_stud(View):
                 resoult[date] = {}
 
             resoult[date][block] = [display, full_info]
-
+            
         driver.quit()
 
-        return JsonResponse(resoult)
+        with GraphDatabase.driver(uri,auth=auth) as bd:
+                add_date(bd,resoult,user_group)
+        
+        return HttpResponse("zakonczono")
     
 class plan_prow(View):
     def get(self,request,**kwargs):
