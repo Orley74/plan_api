@@ -7,6 +7,8 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 import neo4j
 from neo4j import GraphDatabase, RoutingControl, exceptions
+import scrapy
+from scrapy.crawler import CrawlerProcess
 
 
 uri = 'neo4j+s://b35e138c.databases.neo4j.io'
@@ -136,6 +138,19 @@ def add_date(driver,all,group):
 
 
     return ("Zakonczono dodawanie")
+
+def print_plan(driver,group):
+    records, _, _ = driver.execute_query(
+        "MATCH (b:Blok)"
+        "RETURN b",
+         database_="neo4j", routing_=RoutingControl.READ,
+    )
+    resoult = []
+    for record in records:
+        data = record.data()
+        resoult.append(data['b'])
+    return resoult
+    
 
 class group_name(View):
     
@@ -295,43 +310,46 @@ class plan_stud(View):
             return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
 
         
-        confirm = request.META['HTTP_CONFIRM']
-        if confirm != "tak":
-            return HttpResponse["uzyj get"]
+        # confirm = request.META['HTTP_CONFIRM']
+        # if confirm != "tak":
+        #     return HttpResponse["uzyj get"]
         
-        options = webdriver.ChromeOptions()
-        options.add_argument('headless')
-        driver = webdriver.Chrome(options)
-        driver.implicitly_wait(1)
-        resoult = {}
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_plan(driver,user_group)
+        return JsonResponse(records, safe=False)
+        # options = webdriver.ChromeOptions()
+        # options.add_argument('headless')
+        # driver = webdriver.Chrome(options)
+        # driver.implicitly_wait(1)
+        # resoult = {}
 
-        driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
-        lessons = driver.find_elements(By.CLASS_NAME, "lesson")
-        current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
+        # driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
+        # lessons = driver.find_elements(By.CLASS_NAME, "lesson")
+        # current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
         
-        if current_date in sem_zim:
-            sem = sem_zim
-        else:
-            sem = sem_let
+        # if current_date in sem_zim:
+        #     sem = sem_zim
+        # else:
+        #     sem = sem_let
 
-        for index in lessons:
-            date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
+        # for index in lessons:
+        #     date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
             
 
-            month = date.split("_")[1]
+        #     month = date.split("_")[1]
 
-            if month in sem:
-                full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
-                display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
-                block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
-            else:
-                continue
+        #     if month in sem:
+        #         full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
+        #         display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
+        #         block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
+        #     else:
+        #         continue
 
-            if date not in resoult:
-                resoult[date] = {}
+        #     if date not in resoult:
+        #         resoult[date] = {}
 
-            resoult[date][block] = [display, full_info]
-        driver.quit()
+        #     resoult[date][block] = [display, full_info]
+        # driver.quit()
 
         return JsonResponse(resoult)
     
