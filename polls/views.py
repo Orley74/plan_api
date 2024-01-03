@@ -469,7 +469,8 @@ class help(View):
         help = """zawsze i wszedzie bzyku jebany bedzie
         <p> DO KAZDEGO ZAPYTANIA GET, POST ITP POTRZEBNY JEST KLUCZ DOSTEPU
         <br> taki klucz to bedzie karzel
-        <br> przyklad: response = request.get(url, key="karzel")
+        <br> przyklad: groups_key = {'key': 'karzel'}
+        <br> groups = requests.get('https://planwat.azurewebsites.net/polls/grp', headers=groups_key)
         </p>
                 <p>
                 
