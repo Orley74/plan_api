@@ -182,8 +182,7 @@ class prowadzacy(View):
     def get(self,request, **kwargs):
         
         try:
-            key = str(request.read(),encoding='ascii')
-            key = key.split("=")[1]
+            key = request.META['HTTP_KEY']
         except KeyError:
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
@@ -199,8 +198,7 @@ class prowadzacy(View):
     def post(self,request,**kwargs):
 
         try:
-            key = str(request.read(),encoding='ascii')
-            key = key.split("=")[1]
+            key = request.META['HTTP_KEY']
         except KeyError:
             return JsonResponse({"Podaj klucz"})
         if key!="karzel":
