@@ -2,11 +2,14 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
-
+from w3lib.html import remove_tags
 import scrapy
 
 
-class ScrapperItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class Zajecia(scrapy.Item):
+    date = scrapy.Field()
+    nr = scrapy.Field()
+    short = scrapy.Field()
+    id_prow = scrapy.Field()
+    group = scrapy.Field()
+    full = scrapy.Field()

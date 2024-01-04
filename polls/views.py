@@ -7,9 +7,9 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 import neo4j
 from neo4j import GraphDatabase, RoutingControl, exceptions
-import scrapy
-from scrapy.crawler import CrawlerProcess
-
+# import scrapy
+# import scrapydo
+# from Scrapper.Scrapper.spiders.lessons import * 
 
 uri = 'neo4j+s://b35e138c.databases.neo4j.io'
 auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
@@ -42,9 +42,6 @@ def print_group(driver):
     
     print(resoult)
     return resoult
-
-
-
 
 def add_prac(driver, ID, name):
  
@@ -92,15 +89,15 @@ def add_date(driver,all,group):
                     b.place = $place,
                     b.date = $date,
                     b.nr = $blok,
-                    b.grups = [$group],
+                    b.groups = [$group],
                     b.form = $form,
                     b.short = $short,
                     b.full = $full
 
                 On match
                     SET b.grups = CASE 
-                        WHEN NOT $group IN b.grups THEN b.grups + $group
-                        ELSE b.grups
+                        WHEN NOT $group IN b.groups THEN b.groups + $group
+                        ELSE b.groups
                END
                 """,
                 date=date,group=group,blok=blok,id_prow=id_prow,place=place,form=form,short=short,full=full,database_="neo4j",
@@ -122,7 +119,7 @@ def add_date(driver,all,group):
                 
                 driver.execute_query(
                 """match (g:Group), (b:Blok)
-                Where  g.ID in b.grups
+                Where  g.ID in b.groups
                 and b.date = $date
                 and b.nr = $blok
                 MERGE (g)-[bz:blok_zajec]->(b)""",
@@ -141,7 +138,7 @@ def add_date(driver,all,group):
 
 def print_plan(driver,group):
     records, _, _ = driver.execute_query(
-        "MATCH (b:Blok)"
+        f"MATCH (b:Blok) where '{group}' in b.groups "
         "RETURN b",
          database_="neo4j", routing_=RoutingControl.READ,
     )
@@ -149,8 +146,24 @@ def print_plan(driver,group):
     for record in records:
         data = record.data()
         resoult.append(data['b'])
+
+    # scrapydo.setup()
+    # scrapydo.run_spider(LessonsSpider, start_urls = ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY21IX4S0'], group = group)
+  
     return resoult
-    
+
+def print_plan_prac(driver,id_prow):
+    records, _, _ = driver.execute_query(
+        f"MATCH (b:Blok) where '{id_prow}' = b.id_prow "
+        "RETURN b",
+         database_="neo4j", routing_=RoutingControl.READ,
+    )
+    resoult = []
+    for record in records:
+        data = record.data()
+        resoult.append(data['b'])
+
+    return resoult
 
 class group_name(View):
     
@@ -264,11 +277,53 @@ class actuality_stud(View):
             response = requests.get(url, verify=False)
             soup = BeautifulSoup(response.text, 'html.parser')
 
-            date = soup.find('span', class_="head_info").text
+            date = soup.find('span', class_="head_info")
+
+            # options = webdriver.ChromeOptions()
+            # options.add_argument('headless')
+            # options.add_argument('--remote-debugging-port=443')
+
+            # driver = webdriver.Chrome(options)
+            # driver.implicitly_wait(1)
+            # resoult = {}
+
+            # driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
+            # date = driver.find_element(By.CLASS_NAME, "head_info").text
+
 
             return JsonResponse(date, safe=False)
         else:
             return HttpResponse("Wpisz nazwe grupy")
+
+    def post(self,request,**kwargs): 
+        try:
+            key = request.META['HTTP_KEY']
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
+        try:
+            user_group = request.META['HTTP_GRP']
+        except KeyError:
+            return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
+        data_bd = str()
+        
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+             driver.execute_query(
+                """Merge (akt:Data_aktualizacji) 
+            
+                On Create
+                    SET 
+                    akt.data = $today
+
+                On match
+                    SET 
+                    akt.data = $today
+               END
+                """,
+                date=date,group=group,blok=blok,id_prow=id_prow,place=place,form=form,short=short,full=full,database_="neo4j",
+                )    
 
 class days(View):
     def get(self, request, **kwargs):
@@ -308,50 +363,17 @@ class plan_stud(View):
             user_group = request.META['HTTP_GRP']
         except KeyError:
             return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
+        
+        url = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
+        response = requests.get(url, verify=False)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        date = soup.find('span', class_="head_info").text
+        
 
-        
-        # confirm = request.META['HTTP_CONFIRM']
-        # if confirm != "tak":
-        #     return HttpResponse["uzyj get"]
-        
+
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_plan(driver,user_group)
         return JsonResponse(records, safe=False)
-        # options = webdriver.ChromeOptions()
-        # options.add_argument('headless')
-        # driver = webdriver.Chrome(options)
-        # driver.implicitly_wait(1)
-        # resoult = {}
-
-        # driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
-        # lessons = driver.find_elements(By.CLASS_NAME, "lesson")
-        # current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
-        
-        # if current_date in sem_zim:
-        #     sem = sem_zim
-        # else:
-        #     sem = sem_let
-
-        # for index in lessons:
-        #     date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
-            
-
-        #     month = date.split("_")[1]
-
-        #     if month in sem:
-        #         full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
-        #         display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
-        #         block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
-        #     else:
-        #         continue
-
-        #     if date not in resoult:
-        #         resoult[date] = {}
-
-        #     resoult[date][block] = [display, full_info]
-        # driver.quit()
-
-        return JsonResponse(resoult)
     
 
     def post(self,request,**kwargs):  
@@ -359,19 +381,19 @@ class plan_stud(View):
         try:
             key = request.META['HTTP_KEY']
         except KeyError:
-            return JsonResponse({"Podaj klucz"})
+            return HttpResponse("Podaj klucz")
         if key!="karzel":
             return HttpResponse("bledny klucz")
         
         try:
             user_group = request.META['HTTP_GRP']
         except KeyError:
-            return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
+            return HttpResponse("Podaj grupe idioto, group = nazwa_grupy")
 
         
         confirm = request.META['HTTP_CONFIRM']
         if confirm != "tak":
-            return HttpResponse["uzyj get"]
+            return HttpResponse["uzyj get, post jest do zapisu do BD i wymaga confirm='tak'"]
         
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
@@ -393,9 +415,6 @@ class plan_stud(View):
         for index in lessons:
             date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
             
-            
-            
-
             month = date.split("_")[1]
 
             if month in sem:
@@ -416,7 +435,7 @@ class plan_stud(View):
         with GraphDatabase.driver(uri,auth=auth) as bd:
                 add_date(bd,resoult,user_group)
         
-        return HttpResponse("zakonczono")
+        return HttpResponse(f"zakonczono dodawanie grupy {user_group}")
     
 class plan_prow(View):
     def get(self,request,**kwargs):
@@ -424,7 +443,7 @@ class plan_prow(View):
         try:
             key = request.META['HTTP_KEY']
         except KeyError:
-            return JsonResponse({"Podaj klucz"})
+            return HttpResponse("Podaj klucz")
         if key!="karzel":
             return HttpResponse("bledny klucz")
         
@@ -433,39 +452,10 @@ class plan_prow(View):
         except KeyError:
             return JsonResponse({"Podaj prowadzacego cepie, prow = nazwa_grupy zazwyczaj 2 pierwsze litery PS BZYKU CHUJ"})
 
-        options = webdriver.ChromeOptions()
-        options.add_argument('headless')
-        driver = webdriver.Chrome(options)
-        driver.implicitly_wait(1)
-        resoult = {}
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_plan_prow(driver,prow)
 
-        driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={prow}")
-        lessons = driver.find_elements(By.CLASS_NAME, "lesson")
-        current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
-        
-        if current_date in sem_zim:
-            sem = sem_zim
-        else:
-            sem = sem_let
-
-        for index in lessons:
-            date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
-            month = date.split("_")[1]
-
-            if month in sem:
-                full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
-                display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
-                block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
-            else:
-                continue
-
-            if date not in resoult:
-                resoult[date] = {}
-
-            resoult[date][block] = [display, full_info]
-        driver.quit()
-
-        return JsonResponse(resoult)
+        return JsonResponse(records, safe=False)
     
 class help(View):
     def get(self,request):
