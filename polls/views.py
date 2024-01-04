@@ -7,9 +7,11 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 import neo4j
 from neo4j import GraphDatabase, RoutingControl, exceptions
-# import scrapy
-# import scrapydo
-# from Scrapper.Scrapper.spiders.lessons import * 
+import scrapy
+import scrapydo
+from scrapy.crawler import CrawlerProcess
+
+from Scraper.Scraper.spiders.lessons import LessonsSpider 
 
 uri = 'neo4j+s://b35e138c.databases.neo4j.io'
 auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
@@ -273,57 +275,17 @@ class actuality_stud(View):
             return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
         
         if user_group != "":
-            url = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
-            response = requests.get(url, verify=False)
-            soup = BeautifulSoup(response.text, 'html.parser')
+            # url = f'http://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
+            # response = requests.get(url, verify=False)
+            # soup = BeautifulSoup(response.text, 'html.parser')
 
-            date = soup.find('span', class_="head_info")
+            # date = soup.find('span', class_="head_info")
 
-            # options = webdriver.ChromeOptions()
-            # options.add_argument('headless')
-            # options.add_argument('--remote-debugging-port=443')
-
-            # driver = webdriver.Chrome(options)
-            # driver.implicitly_wait(1)
-            # resoult = {}
-
-            # driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
-            # date = driver.find_element(By.CLASS_NAME, "head_info").text
-
+            
 
             return JsonResponse(date, safe=False)
         else:
             return HttpResponse("Wpisz nazwe grupy")
-
-    def post(self,request,**kwargs): 
-        try:
-            key = request.META['HTTP_KEY']
-        except KeyError:
-            return JsonResponse({"Podaj klucz"})
-        if key!="karzel":
-            return HttpResponse("bledny klucz")
-        
-        try:
-            user_group = request.META['HTTP_GRP']
-        except KeyError:
-            return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
-        data_bd = str()
-        
-        with GraphDatabase.driver(uri,auth=auth) as driver:
-             driver.execute_query(
-                """Merge (akt:Data_aktualizacji) 
-            
-                On Create
-                    SET 
-                    akt.data = $today
-
-                On match
-                    SET 
-                    akt.data = $today
-               END
-                """,
-                date=date,group=group,blok=blok,id_prow=id_prow,place=place,form=form,short=short,full=full,database_="neo4j",
-                )    
 
 class days(View):
     def get(self, request, **kwargs):
@@ -395,47 +357,50 @@ class plan_stud(View):
         if confirm != "tak":
             return HttpResponse["uzyj get, post jest do zapisu do BD i wymaga confirm='tak'"]
         
-        options = webdriver.ChromeOptions()
-        options.add_argument('headless')
-        options.add_argument('--remote-debugging-port=443')
+        process = CrawlerProcess()
+        process.crawl(LessonsSpider,start_urls = ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY21IX4S0'],group = user_group)
+        process.start()
+        # options = webdriver.ChromeOptions()
+        # options.add_argument('headless')
+        # options.add_argument('--remote-debugging-port=443')
 
-        driver = webdriver.Chrome(options)
-        driver.implicitly_wait(1)
-        resoult = {}
+        # driver = webdriver.Chrome(options)
+        # driver.implicitly_wait(1)
+        # resoult = {}
 
-        driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
-        lessons = driver.find_elements(By.CLASS_NAME, "lesson")
-        current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
+        # driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
+        # lessons = driver.find_elements(By.CLASS_NAME, "lesson")
+        # current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
         
-        if current_date in sem_zim:
-            sem = sem_zim
-        else:
-            sem = sem_let
+        # if current_date in sem_zim:
+        #     sem = sem_zim
+        # else:
+        #     sem = sem_let
 
-        for index in lessons:
-            date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
+        # for index in lessons:
+        #     date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
             
-            month = date.split("_")[1]
+        #     month = date.split("_")[1]
 
-            if month in sem:
-                full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
-                display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
-                block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
+        #     if month in sem:
+        #         full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
+        #         display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
+        #         block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
                 
-            else:
-                continue
+        #     else:
+        #         continue
 
-            if date not in resoult:
-                resoult[date] = {}
+        #     if date not in resoult:
+        #         resoult[date] = {}
 
-            resoult[date][block] = [display, full_info]
+        #     resoult[date][block] = [display, full_info]
             
-        driver.quit()
+        # driver.quit()
 
-        with GraphDatabase.driver(uri,auth=auth) as bd:
-                add_date(bd,resoult,user_group)
+        # with GraphDatabase.driver(uri,auth=auth) as bd:
+        #         add_date(bd,resoult,user_group)
         
-        return HttpResponse(f"zakonczono dodawanie grupy {user_group}")
+        return JsonResponse({"x":"d"},safe = False)
     
 class plan_prow(View):
     def get(self,request,**kwargs):
