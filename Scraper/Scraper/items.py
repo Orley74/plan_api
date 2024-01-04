@@ -16,4 +16,3 @@ class Lesson(scrapy.Item):
     form = scrapy.Field()
     nr_zajec = scrapy.Field()
     full = scrapy.Field()
-    

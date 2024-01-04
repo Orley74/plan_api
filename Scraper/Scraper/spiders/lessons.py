@@ -4,10 +4,9 @@ from ..items import Lesson
 
 class LessonsSpider(scrapy.Spider):
     name = 'lessons'
-
+    group = str()
     def parse(self, response):
         lessons = response.xpath('//div[@class="lesson"]')
-        resoult = []
         group = str()
         for lesson in lessons:
             date = lesson.xpath('.//span[@class="date"]/text()').get()
@@ -20,15 +19,16 @@ class LessonsSpider(scrapy.Spider):
             place = name[2]
             nr_zajec = name[3].split('[')[1][:-1]
 
-            l = ItemLoader(Lesson(), lesson)
+            l = ItemLoader(Lesson())
             l.add_value("date", date)
-            l.add_value("blok", blok)
+            l.add_value("block", block)
             l.add_value("id_prow", id_prow)
             l.add_value("group", group)
             l.add_value("short", short)
             l.add_value("form", form)
             l.add_value("nr_zajec", nr_zajec)
             l.add_value("full", full)
+            self.log(f'Item values: {l.load_item()}')
 
             yield l.load_item()
         

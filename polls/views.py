@@ -21,6 +21,7 @@ sem_zim = ["01","09","10","11","12"]
 sem_let = ["02","03","04","05","06","07","08"]
 
 
+
 def add_group(driver, ID):
     try:
         driver.execute_query(
@@ -275,11 +276,11 @@ class actuality_stud(View):
             return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
         
         if user_group != "":
-            # url = f'http://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
-            # response = requests.get(url, verify=False)
-            # soup = BeautifulSoup(response.text, 'html.parser')
+            url = f'http://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
+            response = requests.get(url, verify=False)
+            soup = BeautifulSoup(response.text, 'html.parser')
 
-            # date = soup.find('span', class_="head_info")
+            date = soup.find('span', class_="head_info")
 
             
 
@@ -357,11 +358,11 @@ class plan_stud(View):
         if confirm != "tak":
             return HttpResponse["uzyj get, post jest do zapisu do BD i wymaga confirm='tak'"]
         
-        process = CrawlerProcess()
-        process.crawl(LessonsSpider,start_urls = ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY21IX4S0'],group = user_group)
-        process.start()
-        # options = webdriver.ChromeOptions()
-        # options.add_argument('headless')
+        # start_urls = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
+        # scrapydo.setup()
+        # scrapydo.run_spider(LessonsSpider, start_urls=start_urls, group=user_group)
+        # # options = webdriver.ChromeOptions()
+        # # options.add_argument('headless')
         # options.add_argument('--remote-debugging-port=443')
 
         # driver = webdriver.Chrome(options)
