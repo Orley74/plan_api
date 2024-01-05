@@ -9,6 +9,9 @@ import neo4j
 from neo4j import GraphDatabase, RoutingControl, exceptions
 import scrapy
 import scrapydo
+from scrapy.settings import Settings
+from Scraper.Scraper import settings as my_settings
+
 from scrapy.crawler import CrawlerProcess
 
 from Scraper.Scraper.spiders.lessons import LessonsSpider 
@@ -327,10 +330,10 @@ class plan_stud(View):
         except KeyError:
             return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
         
-        url = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
-        response = requests.get(url, verify=False)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        date = soup.find('span', class_="head_info").text
+        # url = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
+        # response = requests.get(url, verify=False)
+        # soup = BeautifulSoup(response.text, 'html.parser')
+        # date = soup.find('span', class_="head_info").text
         
 
 
@@ -358,8 +361,16 @@ class plan_stud(View):
         if confirm != "tak":
             return HttpResponse["uzyj get, post jest do zapisu do BD i wymaga confirm='tak'"]
         
-        # start_urls = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
+        start_urls = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
+        crawler_settings = Settings()
+        crawler_settings.setmodule(my_settings)
+        process = CrawlerProcess(settings=crawler_settings)
+
+        process.crawl(LessonsSpider, start_urls= ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group = 'WCY20IK1S0')
+        process.start()
+        
         # scrapydo.setup()
+        # scrapydo.
         # scrapydo.run_spider(LessonsSpider, start_urls=start_urls, group=user_group)
         # # options = webdriver.ChromeOptions()
         # # options.add_argument('headless')
