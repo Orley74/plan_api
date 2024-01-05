@@ -6,6 +6,10 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import os
+from pathlib import Path
+import sys
+import django
 
 BOT_NAME = "Scraper"
 
@@ -91,3 +95,18 @@ ITEM_PIPELINES = {
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+# ------------------------ Django Integration -----------------------------
+
+# Django project root level path
+django_path = Path(__file__).resolve().parent.parent.parent
+
+# 
+sys.path.append(str(django_path)+"/")
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'djscrapyquotes.settings'
+django.setup()
+
+# This import should be here
+# from quotes.models import Quotes
+# ----------------------------------------------------------------------
