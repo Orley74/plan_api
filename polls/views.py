@@ -13,8 +13,9 @@ from scrapy.settings import Settings
 from Scraper.Scraper import settings as my_settings
 from twisted.internet import reactor
 from scrapy.utils.log import configure_logging
-
+from scrapy.crawler import CrawlerProcess
 from scrapy.crawler import CrawlerRunner
+from multiprocessing import Process, Thread
 
 from Scraper.Scraper.spiders.lessons import LessonsSpider 
 
@@ -362,16 +363,23 @@ class plan_stud(View):
         confirm = request.META['HTTP_CONFIRM']
         if confirm != "tak":
             return HttpResponse["uzyj get, post jest do zapisu do BD i wymaga confirm='tak'"]
-        
-        start_urls = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
-        crawler_settings = Settings()
-        crawler_settings.setmodule(my_settings)
-        runner = CrawlerRunner(settings=crawler_settings)
+        def run_scrapy_spider():
+            crawler_settings = Settings()
+            crawler_settings.setmodule(my_settings)
+            process = CrawlerProcess(settings=crawler_settings)
 
-        runner.crawl(LessonsSpider, start_urls= ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group = 'WCY20IK1S0', debug =False)
-        # d.addBoth(lambda _: reactor.stop())
+            process.crawl(LessonsSpider, start_urls=['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group='WCY20IK1S0')
+            process.start()
+        scrapy_process = Thread(target=run_scrapy_spider)
+        scrapy_process.start()
+        # scrapy_process.join()  # Wait for the scrapy process to finish
+        # start_urls = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
+        # crawler_settings = Settings()
+        # crawler_settings.setmodule(my_settings)
+        # process = CrawlerProcess(settings=crawler_settings)
 
-        # reactor.run()
+        # process.crawl(LessonsSpider, start_urls= ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group = 'WCY20IK1S0')
+        # process.start()
         
         # configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
         # runner = CrawlerRunner()
