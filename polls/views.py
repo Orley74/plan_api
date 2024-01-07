@@ -11,8 +11,10 @@ import scrapy
 import scrapydo
 from scrapy.settings import Settings
 from Scraper.Scraper import settings as my_settings
+from twisted.internet import reactor
+from scrapy.utils.log import configure_logging
 
-from scrapy.crawler import CrawlerProcess
+from scrapy.crawler import CrawlerRunner
 
 from Scraper.Scraper.spiders.lessons import LessonsSpider 
 
@@ -364,14 +366,22 @@ class plan_stud(View):
         start_urls = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
         crawler_settings = Settings()
         crawler_settings.setmodule(my_settings)
-        process = CrawlerProcess(settings=crawler_settings)
+        runner = CrawlerRunner(settings=crawler_settings)
 
-        process.crawl(LessonsSpider, start_urls= ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group = 'WCY20IK1S0')
-        process.start()
+        runner.crawl(LessonsSpider, start_urls= ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group = 'WCY20IK1S0', debug =False)
+        # d.addBoth(lambda _: reactor.stop())
+
+        # reactor.run()
+        
+        # configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
+        # runner = CrawlerRunner()
+
+        # d = runner.crawl(LessonsSpider, start_urls= ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group = 'WCY20IK1S0')
+        # d.addBoth(lambda _: reactor.stop())
+        # reactor.run()  # the script will block here until the crawling is finished
         
         # scrapydo.setup()
-        # scrapydo.
-        # scrapydo.run_spider(LessonsSpider, start_urls=start_urls, group=user_group)
+        # scrapydo.run_spider(LessonsSpider, start_urls=start_urls, group=user_group, options= crawler_settings)
         # # options = webdriver.ChromeOptions()
         # # options.add_argument('headless')
         # options.add_argument('--remote-debugging-port=443')
