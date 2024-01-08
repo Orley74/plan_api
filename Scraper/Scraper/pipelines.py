@@ -22,15 +22,15 @@ class JsonWriterPipeline:
         self.file.close()
 
     def process_item(self, item, spider):
-        # uri = 'neo4j+s://b35e138c.databases.neo4j.io'
-        # auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
-        # with GraphDatabase.driver(uri,auth=auth) as bd:
-        #         # add_date(bd,resoult,user_group)
+        uri = 'neo4j+s://b35e138c.databases.neo4j.io'
+        auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
+        with GraphDatabase.driver(uri,auth=auth) as bd:
+                # add_date(bd,resoult,user_group)
                 
-        #         driver.execute_query(
-        #         "Create (p:asdasd {a:a}) ",
-        #         database_="neo4j")
-        line = json.dumps(ItemAdapter(item).asdict()) + "\n"
-        self.file.write("xd")
+                driver.execute_query(
+                "Create (p:asdasd) ",
+                database_="neo4j")
+        # line = json.dumps(ItemAdapter(item).asdict()) + "\n"
+        # self.file.write(line)
 
         return item
