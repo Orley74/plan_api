@@ -151,9 +151,7 @@ def print_plan(driver,group):
         data = record.data()
         resoult.append(data['b'])
 
-    # scrapydo.setup()
-    # scrapydo.run_spider(LessonsSpider, start_urls = ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY21IX4S0'], group = group)
-  
+
     return resoult
 
 def print_plan_prac(driver,id_prow):
@@ -181,7 +179,6 @@ class group_name(View):
             return HttpResponse("bledny klucz")
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_group(driver)
-            driver.close()
 
         return JsonResponse(records, safe=False)
     
