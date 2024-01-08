@@ -5,10 +5,21 @@ from ..items import Lesson
 class LessonsSpider(scrapy.Spider):
     name = 'lessons'
     group = str()
-    
+    def __init__(self, *args, **kwargs):
+        super(LessonsSpider, self).__init__(*args, **kwargs)
+        self.logger.info("Spider inicjalizowany")
+
+    def start_requests(self):
+        self.logger.info("Zaczynam prace")
+        urls = ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0']
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
+
     def parse(self, response):
         lessons = response.xpath('//div[@class="lesson"]')
         for lesson in lessons:
+            self.logger.info(f"Przetwarzanie strony: {response.url}")
+
             date = lesson.xpath('.//span[@class="date"]/text()').get()
             name = lesson.xpath('.//span[@class="name"]/text()').getall()
             full = lesson.xpath('.//span[@class="info"]/text()').get()

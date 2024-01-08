@@ -3,4 +3,5 @@ selenium
 requests
 bs4
 neo4j
-scrapy==2.11
+scrapy
+scrapyd
