@@ -363,20 +363,20 @@ class plan_stud(View):
 
         # process.crawl(LessonsSpider, start_urls=['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group='WCY20IK1S0')
         # process.start()
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        # loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(loop)
 
-        def run_spider():
-            crawler_settings = Settings()
-            crawler_settings.setmodule(my_settings)
+        # def run_spider():
+        #     crawler_settings = Settings()
+        #     crawler_settings.setmodule(my_settings)
             
-            process = CrawlerProcess(settings=crawler_settings)
-            process.crawl(LessonsSpider, start_urls=['https://pl.wikipedia.org/wiki/'], group='WCY20IK1S0')
-            process.start()
+        #     process = CrawlerProcess(settings=crawler_settings)
+        #     process.crawl(LessonsSpider, start_urls=['https://pl.wikipedia.org/wiki/'], group='WCY20IK1S0')
+        #     process.start()
 
-        # Uruchomienie procesu w executorze ThreadPoolExecutor
-        with ThreadPoolExecutor() as executor:
-            loop.run_in_executor(executor, run_spider)
+        # # Uruchomienie procesu w executorze ThreadPoolExecutor
+        # with ThreadPoolExecutor() as executor:
+        #     loop.run_in_executor(executor, run_spider)
         # scrapy_process.join()  # Wait for the scrapy process to finish
         # start_urls = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
         # crawler_settings = Settings()
