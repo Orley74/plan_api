@@ -8,11 +8,11 @@ import neo4j
 from neo4j import GraphDatabase, RoutingControl, exceptions
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from scrapy.settings import Settings
-from Scraper.Scraper import settings as my_settings
-from scrapy.crawler import CrawlerProcess
+# from scrapy.settings import Settings
+# from Scraper.Scraper import settings as my_settings
+# from scrapy.crawler import CrawlerProcess
 
-from Scraper.Scraper.spiders.lessons import LessonsSpider 
+# from Scraper.Scraper.spiders.lessons import LessonsSpider 
 
 uri = 'neo4j+s://b35e138c.databases.neo4j.io'
 auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
