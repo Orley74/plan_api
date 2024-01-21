@@ -38,6 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Scraper.Scraper.settings',
+    'polls',
+    'scrapyd'
+
 ]
 
 MIDDLEWARE = [
@@ -94,7 +98,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -117,3 +120,4 @@ STATICFILES_DIRS = (str(BASE_DIR.joinpath('static')),)
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+SCRAPYD_API_URL = 'http://localhost:6800/'

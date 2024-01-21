@@ -14,7 +14,7 @@ NEWSPIDER_MODULE = "Scraper.Scraper.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = "Scraper (+http://www.yourdomain.com)"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -22,6 +22,7 @@ ROBOTSTXT_OBEY = True
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 2
 
+DOWNLOAD_TIMEOUT = 2
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
@@ -32,7 +33,7 @@ DOWNLOAD_DELAY = 3
 LOG_LEVEL = 'DEBUG'
 
 # Disable cookies (enabled by default)
-# COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
@@ -90,6 +91,14 @@ AUTOTHROTTLE_DEBUG = True
 
 # Set settings whose default value is deprecated to a future-proof value
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
-TWISTED_REACTOR = "twisted.internet.epollreactor.EPollReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+TWISTED_REACTOR = "twisted.internet.epollreactor.EPollReactor"
+
+import os
+import sys
+
+DJANGO_PROJECT_PATH = '../../proj/'
+sys.path.insert(0, DJANGO_PROJECT_PATH)
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'proj.settings'
 

@@ -1,4 +1,7 @@
+from concurrent.futures import ThreadPoolExecutor
 import requests
+import threading
+
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -7,13 +10,17 @@ from django.views import View
 import neo4j
 from neo4j import GraphDatabase, RoutingControl, exceptions
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
-# from scrapy.settings import Settings
-# from Scraper.Scraper import settings as my_settings
-# from scrapy.crawler import CrawlerProcess
-
-# from Scraper.Scraper.spiders.lessons import LessonsSpider 
-
+from Scraper.Scraper.spiders.lessons import LessonsSpider
+from scrapy.settings import Settings
+from Scraper.Scraper import settings as my_settings
+from scrapy.crawler import CrawlerProcess
+from asgiref.sync import sync_to_async
+from scrapy import signals
+from scrapy.crawler import CrawlerRunner
+from scrapy.signalmanager import dispatcher
+import crochet
+crochet.setup()
+from twisted.internet import threads, reactor, task
 uri = 'neo4j+s://b35e138c.databases.neo4j.io'
 auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
 
@@ -45,7 +52,7 @@ def print_group(driver):
         resoult.append(record['g.ID'])
     
     print(resoult)
-    return resoult
+    return records
 
 def add_prac(driver, ID, name):
  
@@ -141,14 +148,16 @@ def add_date(driver,all,group):
     return ("Zakonczono dodawanie")
 
 def print_plan(driver,group):
+    print(group)
     records, _, _ = driver.execute_query(
-        f"MATCH (b:Blok) where '{group}' in b.groups "
-        "RETURN b",
+        f"""MATCH (b:Blok) where "{group}" in b.grups 
+        RETURN b""",
          database_="neo4j", routing_=RoutingControl.READ,
     )
     resoult = []
     for record in records:
         data = record.data()
+        print(data['b'])
         resoult.append(data['b'])
 
 
@@ -356,42 +365,19 @@ class plan_stud(View):
         if confirm != "tak":
             return HttpResponse["uzyj get, post jest do zapisu do BD i wymaga confirm='tak'"]
         
-        # process = CrawlerProcess(settings=crawler_settings)
+        output_data = []
 
-        # process.crawl(LessonsSpider, start_urls=['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group='WCY20IK1S0')
-        # process.start()
-        # loop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(loop)
-
-        # def run_spider():
-        #     crawler_settings = Settings()
-        #     crawler_settings.setmodule(my_settings)
+        def run_spider():
             
-        #     process = CrawlerProcess(settings=crawler_settings)
-        #     process.crawl(LessonsSpider, start_urls=['https://pl.wikipedia.org/wiki/'], group='WCY20IK1S0')
-        #     process.start()
+            crawler_settings = Settings()
+            crawler_settings.setmodule(my_settings)
+            crawler_settings['TELNETCONSOLE_ENABLED'] = True
+            runner = CrawlerProcess(settings=crawler_settings)
+            d = runner.crawl(LessonsSpider, start_urls=['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group='WCY20IK1S0')
+            d.addBoth(lambda _: reactor.stop())  
+                  
+        run_spider()
 
-        # # Uruchomienie procesu w executorze ThreadPoolExecutor
-        # with ThreadPoolExecutor() as executor:
-        #     loop.run_in_executor(executor, run_spider)
-        # scrapy_process.join()  # Wait for the scrapy process to finish
-        # start_urls = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
-        # crawler_settings = Settings()
-        # crawler_settings.setmodule(my_settings)
-        # process = CrawlerProcess(settings=crawler_settings)
-
-        # process.crawl(LessonsSpider, start_urls= ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group = 'WCY20IK1S0')
-        # process.start()
-        
-        # configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
-        # runner = CrawlerRunner()
-
-        # d = runner.crawl(LessonsSpider, start_urls= ['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group = 'WCY20IK1S0')
-        # d.addBoth(lambda _: reactor.stop())
-        # reactor.run()  # the script will block here until the crawling is finished
-        
-        # scrapydo.setup()
-        # scrapydo.run_spider(LessonsSpider, start_urls=start_urls, group=user_group, options= crawler_settings)
         # # options = webdriver.ChromeOptions()
         # # options.add_argument('headless')
         # options.add_argument('--remote-debugging-port=443')

@@ -4,8 +4,6 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
-from scrapy.item import Item, Field
-
 
 class Lesson(scrapy.Item):
     date = scrapy.Field()
@@ -14,5 +12,6 @@ class Lesson(scrapy.Item):
     group = scrapy.Field()
     short = scrapy.Field()
     form = scrapy.Field()
+    place = scrapy.Field()
     nr_zajec = scrapy.Field()
     full = scrapy.Field()
