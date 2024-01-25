@@ -18,8 +18,7 @@ from asgiref.sync import sync_to_async
 from scrapy import signals
 from scrapy.crawler import CrawlerRunner
 from scrapy.signalmanager import dispatcher
-import crochet
-crochet.setup()
+
 from twisted.internet import threads, reactor, task
 uri = 'neo4j+s://b35e138c.databases.neo4j.io'
 auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
@@ -373,7 +372,7 @@ class plan_stud(View):
             crawler_settings.setmodule(my_settings)
             crawler_settings['TELNETCONSOLE_ENABLED'] = True
             runner = CrawlerProcess(settings=crawler_settings)
-            d = runner.crawl(LessonsSpider, start_urls=['https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id=WCY20IK1S0'], group='WCY20IK1S0')
+            d = runner.crawl(LessonsSpider, start_urls=['https://developer.dji.com/products/'], group='WCY20IK1S0')
             d.addBoth(lambda _: reactor.stop())  
                   
         run_spider()
