@@ -51,7 +51,7 @@ def print_group(driver):
         resoult.append(record['g.ID'])
     
     print(resoult)
-    return records
+    return resoult
 
 def add_prac(driver, ID, name):
  
@@ -149,7 +149,7 @@ def add_date(driver,all,group):
 def print_plan(driver,group):
     print(group)
     records, _, _ = driver.execute_query(
-        f"""MATCH (b:Blok) where "{group}" in b.grups 
+        f"""MATCH (b:Block) where "{group}" in b.groups 
         RETURN b""",
          database_="neo4j", routing_=RoutingControl.READ,
     )
