@@ -26,7 +26,10 @@ SECRET_KEY = 'django-insecure-mx9sihquf$l&1jm)d8x(e=6iitqv(4$u@22pgdoef^s4r(^fxg
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
+CORS_ALLOWED_ORIGINS = [
+    "http://*",
+    "https://*"
+]
 
 # Application definition
 
@@ -40,12 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Scraper.Scraper.settings',
     'polls',
-    'scrapyd'
-
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',

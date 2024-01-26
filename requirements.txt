@@ -6,3 +6,4 @@ neo4j
 scrapy
 scrapyd
 twisted
+django-cors-headers
