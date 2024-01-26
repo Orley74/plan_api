@@ -182,9 +182,24 @@ class group_name(View):
         try:
             key = request.META['HTTP_KEY']
         except KeyError:
-            return JsonResponse({"Podaj klucz"})
+            return JsonResponse({"Podaj klucz"}, safe=False)
         if key!="karzel":
-            return HttpResponse("bledny klucz")
+            return JsonResponse({"Zly klucz"}, safe=False)
+        
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_group(driver)
+
+        return JsonResponse(records, safe=False)
+    
+    def options(self,request, **kwargs):
+        
+        try:
+            key = request.META['HTTP_KEY']
+        except KeyError:
+            return JsonResponse({"Podaj klucz"}, safe=False)
+        if key!="karzel":
+            return JsonResponse({"Zly klucz"}, safe=False)
+        
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_group(driver)
 
@@ -195,9 +210,9 @@ class group_name(View):
         try:
             key = request.META['HTTP_KEY']
         except KeyError:
-            return JsonResponse({"Podaj klucz"})
+            return JsonResponse({"Podaj klucz"}, safe=False)
         if key!="karzel":
-            return HttpResponse("bledny klucz")
+            return JsonResponse({"Zly klucz"}, safe=False)
     
         url = 'https://old.wcy.wat.edu.pl/pl/rozklad'
         response = requests.get(url, verify=False)
@@ -324,9 +339,9 @@ class plan_stud(View):
         try:
             key = request.META['HTTP_KEY']
         except KeyError:
-            return JsonResponse({"Podaj klucz"})
+            return JsonResponse({"Podaj klucz"}, safe=False)
         if key!="karzel":
-            return HttpResponse("bledny klucz")
+            return JsonResponse({"Zly klucz"}, safe=False)
         
         try:
             user_group = request.META['HTTP_GRP']
