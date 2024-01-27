@@ -191,6 +191,20 @@ class group_name(View):
 
         return JsonResponse(records, safe=False)
     
+    def options(self,request, **kwargs):
+        
+        try:
+            key = request.META['HTTP_KEY']
+        except KeyError:
+            return JsonResponse({"Podaj klucz"}, safe=False)
+        if key!="karzel":
+            return JsonResponse({"Zly klucz"}, safe=False)
+        
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_group(driver)
+
+        return JsonResponse(records, safe=False)
+    
     def post(self,request,**kwargs):
         
         try:
@@ -232,7 +246,20 @@ class prowadzacy(View):
             
         return JsonResponse(records, safe=False)
 
-
+    def options(self,request, **kwargs):
+        
+        try:
+            key = request.META['HTTP_KEY']
+        except KeyError:
+            return JsonResponse({"Podaj klucz"})
+        if key!="karzel":
+            return HttpResponse("bledny klucz")
+        
+        
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_prac(driver)
+            
+        return JsonResponse(records, safe=False)
     def post(self,request,**kwargs):
 
         try:
