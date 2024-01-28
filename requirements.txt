@@ -1,5 +1,6 @@
 Django==4.1.4
 requests
 bs4
+selenium
 neo4j
 django-cors-headers
