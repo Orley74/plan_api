@@ -1,7 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
 import requests
-import threading
-
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -9,17 +7,7 @@ from django.http import HttpResponse,JsonResponse
 from django.views import View
 import neo4j
 from neo4j import GraphDatabase, RoutingControl, exceptions
-import asyncio
-from Scraper.Scraper.spiders.lessons import LessonsSpider
-from scrapy.settings import Settings
-from Scraper.Scraper import settings as my_settings
-from scrapy.crawler import CrawlerProcess
-from asgiref.sync import sync_to_async
-from scrapy import signals
-from scrapy.crawler import CrawlerRunner
-from scrapy.signalmanager import dispatcher
 
-from twisted.internet import threads, reactor, task
 uri = 'neo4j+s://b35e138c.databases.neo4j.io'
 auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
 
@@ -348,12 +336,6 @@ class plan_stud(View):
         except KeyError:
             return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
         
-        # url = f'https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
-        # response = requests.get(url, verify=False)
-        # soup = BeautifulSoup(response.text, 'html.parser')
-        # date = soup.find('span', class_="head_info").text
-        
-
 
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_plan(driver,user_group)
@@ -378,59 +360,7 @@ class plan_stud(View):
         confirm = request.META['HTTP_CONFIRM']
         if confirm != "tak":
             return HttpResponse["uzyj get, post jest do zapisu do BD i wymaga confirm='tak'"]
-        
-        output_data = []
 
-        def run_spider():
-            
-            crawler_settings = Settings()
-            crawler_settings.setmodule(my_settings)
-            crawler_settings['TELNETCONSOLE_ENABLED'] = True
-            runner = CrawlerProcess(settings=crawler_settings)
-            d = runner.crawl(LessonsSpider, start_urls=['https://developer.dji.com/products/'], group='WCY20IK1S0')
-            d.addBoth(lambda _: reactor.stop())  
-                  
-        run_spider()
-
-        # # options = webdriver.ChromeOptions()
-        # # options.add_argument('headless')
-        # options.add_argument('--remote-debugging-port=443')
-
-        # driver = webdriver.Chrome(options)
-        # driver.implicitly_wait(1)
-        # resoult = {}
-
-        # driver.get(f"https://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}")
-        # lessons = driver.find_elements(By.CLASS_NAME, "lesson")
-        # current_date = driver.find_element(By.CLASS_NAME, "head_info").get_attribute("innerHTML").split("-")[1]
-        
-        # if current_date in sem_zim:
-        #     sem = sem_zim
-        # else:
-        #     sem = sem_let
-
-        # for index in lessons:
-        #     date = index.find_element(By.CLASS_NAME, "date").get_attribute("innerHTML")
-            
-        #     month = date.split("_")[1]
-
-        #     if month in sem:
-        #         full_info = index.find_element(By.CLASS_NAME, "info").get_attribute("innerHTML")
-        #         display = index.find_element(By.CLASS_NAME, "name").get_attribute("innerHTML").split("<br>")
-        #         block = index.find_element(By.CLASS_NAME,"block_id").get_attribute("innerHTML")[-1:]
-                
-        #     else:
-        #         continue
-
-        #     if date not in resoult:
-        #         resoult[date] = {}
-
-        #     resoult[date][block] = [display, full_info]
-            
-        # driver.quit()
-
-        # with GraphDatabase.driver(uri,auth=auth) as bd:
-        #         add_date(bd,resoult,user_group)
         
         return JsonResponse({"x":"d"},safe = False)
     
@@ -450,24 +380,13 @@ class plan_prow(View):
             return JsonResponse({"Podaj prowadzacego cepie, prow = nazwa_grupy zazwyczaj 2 pierwsze litery PS BZYKU CHUJ"})
 
         with GraphDatabase.driver(uri,auth=auth) as driver:
-            records = print_plan_prow(driver,prow)
+            records = print_plan_prac(driver,prow)
 
         return JsonResponse(records, safe=False)
     
 class help(View):
     def get(self,request):
        
-    #     try:
-    #         with GraphDatabase.driver(uri, auth) as driver:
-    #             driver.execute_query(
-    #     "MERGE (a:Person {name: $name}) "
-    #     "MERGE (friend:Person {name: $friend_name}) "
-    #     "MERGE (a)-[:KNOWS]->(friend)",
-    #     name="name", friend_name="friend_name", database_="Plan",
-    # )
-                 
-    #     finally:
-    #         driver.close()
         
         help = """zawsze i wszedzie bzyku jebany bedzie
         <p> DO KAZDEGO ZAPYTANIA GET, POST ITP POTRZEBNY JEST KLUCZ DOSTEPU
@@ -512,3 +431,13 @@ class help(View):
                 
                 """
         return HttpResponse(help)
+    
+class plan_stud_karwo(View):
+    def get(self,request,**kwargs):  
+        
+        user_group = request.GET.get('grupa')
+
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_plan(driver,user_group)
+        return JsonResponse(records, safe=False)
+    

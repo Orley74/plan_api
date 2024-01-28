@@ -1,9 +1,5 @@
 Django==4.1.4
-selenium
 requests
 bs4
 neo4j
-scrapy
-scrapyd
-twisted
 django-cors-headers
