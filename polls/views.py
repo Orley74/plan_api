@@ -436,7 +436,7 @@ class plan_stud_karwo(View):
     def get(self,request,**kwargs):  
         
         user_group = request.GET.get('grupa')
-
+        print(user_group)
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_plan(driver,user_group)
         return JsonResponse(records, safe=False)
