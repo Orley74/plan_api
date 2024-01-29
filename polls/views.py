@@ -442,3 +442,11 @@ class plan_stud_karwo(View):
             records = print_plan(driver,user_group)
         return JsonResponse(records, safe=False)
     
+class plan_prow_karwo(View):
+    def get(self,request,**kwargs):  
+        
+        prow = request.GET.get('prow')
+        print(prow)
+        with GraphDatabase.driver(uri,auth=auth) as driver:
+            records = print_plan_prac(driver,prow)
+        return JsonResponse(records, safe=False)
