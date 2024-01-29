@@ -11,5 +11,6 @@ urlpatterns = [
     path("grp",views.group_name.as_view(), name="plan"),
     path("plan/prow",views.plan_prow.as_view(), name="plan"),
     path("plan/stud/js",views.plan_stud_karwo.as_view(), name="plan"),
+    path("plan/prow/js",views.plan_prow_karwo.as_view(), name="plan"),
 
 ]
