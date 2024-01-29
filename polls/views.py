@@ -29,7 +29,6 @@ def add_group(driver, ID):
         print(f"grupa {ID} jest juz w bazie danych")
 
 
-
 def print_group(driver):
     records, _, _= driver.execute_query(
         "MATCH (g:Group)"
@@ -177,7 +176,7 @@ class group_name(View):
         # except KeyError:
         #     return JsonResponse({"Podaj klucz"}, safe=False)
         # if key!="karzel":
-        #     return JsonResponse({"Zly klucz"}, safe=False);
+        #     return JsonResponse({"Zly klucz"}, safe=False)
         
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_group(driver)
@@ -359,7 +358,7 @@ class plan_stud(View):
         try:
             user_group = request.META['HTTP_GRP']
         except KeyError:
-            return HttpResponse("Podaj grupe, group = nazwa_grupy")
+            return HttpResponse("Podaj grupe idioto, group = nazwa_grupy")
 
         
         confirm = request.META['HTTP_CONFIRM']
@@ -382,7 +381,7 @@ class plan_prow(View):
         try:
             prow = request.META['HTTP_PROW']
         except KeyError:
-            return JsonResponse({"Podaj prowadzacego, prow = nazwa_grupy zazwyczaj 2 pierwsze litery PS BZYKU CHUJ"})
+            return JsonResponse({"Podaj prowadzacego cepie, prow = nazwa_grupy zazwyczaj 2 pierwsze litery PS BZYKU CHUJ"})
 
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_plan_prac(driver,prow)
@@ -447,6 +446,7 @@ class plan_stud_karwo(View):
     
 class plan_prow_karwo(View):
     def get(self,request,**kwargs):  
+        
         prow = request.GET.get('prow')
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_plan_prac(driver,prow)
