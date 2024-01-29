@@ -40,7 +40,7 @@ def print_group(driver):
     for record in records:
         resoult.append(record['g.ID'])
     
-    print(resoult)
+    print(f"Znaleziono {len(resoult)} grup")
     return resoult
 
 def add_prac(driver, ID, name):
@@ -60,10 +60,12 @@ def print_prac(driver):
          database_="neo4j", routing_=RoutingControl.READ,
     )
     resoult = {}
-    print(records[0].data())
     for record in records:
         data = record.data()
         resoult[data['p']['ID']] = data['p']['name']
+    
+    print(f"Znaleziono {len(resoult)} grup")
+
     return resoult
 
 def add_date(driver,all,group):
@@ -137,7 +139,7 @@ def add_date(driver,all,group):
     return ("Zakonczono dodawanie")
 
 def print_plan(driver,group):
-    print(group)
+    print(f"wyswietlam plan dla {group}")
     records, _, _ = driver.execute_query(
         f"""MATCH (b:Block) where "{group}" in b.groups 
         RETURN b""",
@@ -146,15 +148,15 @@ def print_plan(driver,group):
     resoult = []
     for record in records:
         data = record.data()
-        print(data['b'])
         resoult.append(data['b'])
 
+    print(f"Znaleziono {len(resoult)} wynikow")
 
     return resoult
 
 def print_plan_prac(driver,id_prow):
     id_prow = unquote(id_prow, encoding='utf-8')
-    print(id_prow)
+    print(f"wyswietlam plan dla {id_prow}")
     records, _, _ = driver.execute_query(
         f"""MATCH (p:Pracownik)-[:prowadzi_zajecia]->(b:Block) where p.ID="{id_prow}" return b""",
          database_="neo4j", routing_=RoutingControl.READ,
@@ -163,7 +165,7 @@ def print_plan_prac(driver,id_prow):
     for record in records:
         data = record.data()
         resoult.append(data['b'])
-
+    print(f"Znaleziono {len(resoult)} wynikow")
     return resoult
 
 class group_name(View):
@@ -439,7 +441,6 @@ class plan_stud_karwo(View):
     def get(self,request,**kwargs):  
         
         user_group = request.GET.get('grupa')
-        print(user_group)
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_plan(driver,user_group)
         return JsonResponse(records, safe=False)
@@ -448,7 +449,6 @@ class plan_prow_karwo(View):
     def get(self,request,**kwargs):  
         
         prow = request.GET.get('prow')
-        print(prow)
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_plan_prac(driver,prow)
         return JsonResponse(records, safe=False)
