@@ -8,7 +8,8 @@ from django.views import View
 import neo4j
 from selenium import webdriver
 from neo4j import GraphDatabase, RoutingControl, exceptions
-
+from urllib.parse import unquote
+ 
 uri = 'neo4j+s://b35e138c.databases.neo4j.io'
 auth = ("neo4j", 'VGfvQTk0VCkEzne79CGPXTKA_Eykhx0OwudLZUKG7sQ')
 
@@ -152,9 +153,10 @@ def print_plan(driver,group):
     return resoult
 
 def print_plan_prac(driver,id_prow):
+    id_prow = unquote(id_prow, encoding='utf-8')
+    print(id_prow)
     records, _, _ = driver.execute_query(
-        f"MATCH (b:Blok) where '{id_prow}' = b.id_prow "
-        "RETURN b",
+        f"""MATCH (p:Pracownik)-[:prowadzi_zajecia]->(b:Block) where p.ID="{id_prow}" return b""",
          database_="neo4j", routing_=RoutingControl.READ,
     )
     resoult = []
