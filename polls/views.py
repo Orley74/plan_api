@@ -177,7 +177,7 @@ class group_name(View):
         # except KeyError:
         #     return JsonResponse({"Podaj klucz"}, safe=False)
         # if key!="karzel":
-        #     return JsonResponse({"Zly klucz"}, safe=False)
+        #     return JsonResponse({"Zly klucz"}, safe=False);
         
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_group(driver)
