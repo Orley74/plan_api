@@ -142,8 +142,7 @@ def print_plan(driver,group):
     records, _, _ = driver.execute_query(
         f"""MATCH (b:Block) where "{group}" in b.groups 
         RETURN b""",
-         database_="neo4j", routing_=RoutingControl.READ,
-    )
+         database_="neo4j", routing_=RoutingControl.READ)
     resoult = []
     for record in records:
         data = record.data()
@@ -286,7 +285,7 @@ class actuality_stud(View):
         try:
             user_group = request.META['HTTP_GRP']
         except KeyError:
-            return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
+            return JsonResponse({"Podaj grupe, group = nazwa_grupy"})
         
         if user_group != "":
             url = f'http://old.wcy.wat.edu.pl/pl/rozklad?grupa_id={user_group}'
@@ -338,7 +337,7 @@ class plan_stud(View):
         try:
             user_group = request.META['HTTP_GRP']
         except KeyError:
-            return JsonResponse({"Podaj grupe idioto, group = nazwa_grupy"})
+            return JsonResponse({"Podaj grupe, group = nazwa_grupy"})
         
 
         with GraphDatabase.driver(uri,auth=auth) as driver:
@@ -358,7 +357,7 @@ class plan_stud(View):
         try:
             user_group = request.META['HTTP_GRP']
         except KeyError:
-            return HttpResponse("Podaj grupe idioto, group = nazwa_grupy")
+            return HttpResponse("Podaj grupe, group = nazwa_grupy")
 
         
         confirm = request.META['HTTP_CONFIRM']
@@ -381,7 +380,7 @@ class plan_prow(View):
         try:
             prow = request.META['HTTP_PROW']
         except KeyError:
-            return JsonResponse({"Podaj prowadzacego cepie, prow = nazwa_grupy zazwyczaj 2 pierwsze litery PS BZYKU CHUJ"})
+            return JsonResponse({"Podaj prowadzacego, prow = nazwa_grupy zazwyczaj 2 pierwsze litery"})
 
         with GraphDatabase.driver(uri,auth=auth) as driver:
             records = print_plan_prac(driver,prow)
@@ -392,7 +391,7 @@ class help(View):
     def get(self,request):
        
         
-        help = """zawsze i wszedzie bzyku jebany bedzie
+        help = """
         <p> DO KAZDEGO ZAPYTANIA GET, POST ITP POTRZEBNY JEST KLUCZ DOSTEPU
         <br> taki klucz to bedzie karzel
         <br> przyklad: groups_key = {'key': 'karzel'}
@@ -408,12 +407,12 @@ class help(View):
 
                             Zeby byly polskie znaki musicie przy kazdym odbiorze JSON dopisac:
                             <p> with open(wasz_request, encoding="UTF-8):
-                            </p> Nie, nie moglem tego zrobic tutaj </p><br>
+                            </p> </p><br>
 
                         <p><dfn>/actuality/stud                          </dfn> -- wypluwa ostatnia aktualizacje planu danej grupy 
                             <p> "Data aktualizacji:2023-10-25 00:25:35" </p </p><br>
 
-                        <p><dfn>/days                                    </dfn> -- zwraca dni kalendarzowe jakby sie wam nie chcialo kalendarza wrzucac
+                        <p><dfn>/days                                    </dfn> -- zwraca dni kalendarzowe
                             <p> {"1": [["25", "IX"], ["02", "X"],...], "2": [...]} zwraca slownik gdzie id to 1,2,3... dni tygodnia od poniedzialku a wartosci to [dzien,miesiac]
                             </p></p><br>
 
@@ -422,16 +421,13 @@ class help(View):
                             <p> {"dd-mm-rrrr": {"1": [display,full_info ], "2":...}, ...} max jest do 7 bloku </p/ </p><br>
                         
                         <p><dfn>/grp                                     </dfn> -- zwraca wszystkie grupy szkoleniowe, prosta lista 
-                            <p> ["CHUJ", "chuj", "ChUj", "Bzyku", "To", "Kurwa"] </p> </p><br>
+                            <p> ["a","b","c"] </p> </p><br>
                         
                         <p><dfn>/plan/prow                               </dfn> -- dziala i zwraca to samo co plan dla studentow </p>
                         <p>tyle ze trzeba dac id prowadzacego przy GET, prow=id_prow
                         </div>
                         <br>jeszcze nie ma zapisywania do BD wiec wszystko robcie na requestach
-                        <br>zrobie tak zeby zawsze JSON byly takie same to bez pierdolenia ze sie zmieni
-                        <br>jak skonczycie front to podeslijcie i wstawie gotutaj
-                        <br>formas czytaj juz o testach jednostkowych, dam ci dostep do serwera jak nauczysz sie cos robic
-                        <br>zebys przypadkiem czegos nie rozjebala                        
+                                   
                 
                 """
         return HttpResponse(help)
